@@ -1,0 +1,71 @@
+version: '3'
+services:
+  eladmin-mysql:
+    build:
+      context: ./sql
+    environment:
+      MYSQL_ROOT_PASSWORD: Dls3cret.
+      MYSQL_ROOT_HOST: '%'
+      TZ: Asia/Shanghai
+    restart: unless-stopped
+    container_name: eladmin-mysql
+    image: eladmin-mysql
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+      --max_allowed_packet=128M
+      --default-authentication-plugin=caching_sha2_password
+    ports:
+      - 3306:3306
+
+  eladmin-redis:
+    image: redis:6.2.6-alpine # 指定服务镜像，最好是与之前下载的redis配置文件保持一致
+    container_name: eladmin-redis # 容器名称
+    restart: on-failure # 重启方式
+    environment:
+      - TZ=Asia/Shanghai # 设置时区
+#    volumes: # 配置数据卷
+#      - /root/redis/data:/data
+#      - /etc/redis/redis.conf:/etc/redis/redis.conf
+    ports: # 映射端口
+      - 6379:6379
+#    sysctls: # 设置容器中的内核参数
+#      - net.core.somaxconn=1024
+    #  - vm.overcommit_memory=1
+#    command: /bin/sh -c "echo 'vm.overcommit_memory = 1' >> /etc/sysctl.conf
+#      && redis-server /etc/redis/redis.conf --appendonly yes" # 指定配置文件并开启持久化
+    privileged: true # 使用该参数，container内的root拥有真正的root权限。否则，container内的root只是外部的一个普通用户权限
+
+  eladmin-starter:
+    build:
+      context: ./eladmin-system
+    restart: unless-stopped
+    depends_on:
+      - eladmin-mysql
+      - eladmin-redis
+    container_name: eladmin-starter
+    image: eladmin-starter
+    environment:
+      - DB_HOST=127.0.0.1
+      - REDIS_HOST=127.0.0.1
+    ports:
+      - 8000:8000
+
+  eladmin-nginx:
+    image: nginx
+    container_name: eladmin-nginx
+    restart: unless-stopped
+    ports:
+      - 443:443
+      - 80:80
+    volumes:
+      - /usr/local/share/nginx/log/:/etc/nginx/logs/
+      - /usr/local/share/nginx/www/:/etc/nginx/html/
+      # ssl 文件夹中放置nginx服务对应的证书文件
+#      - /nginx/conf/ssl:/cert
+#      - /etc/letsencrypt:/etc/letsencrypt
+      - /usr/local/share/nginx.conf:/etc/nginx/nginx.conf
+#      - /etc/localtime:/etc/localtime:ro  #可与宿主机共享时区
+#      - /etc/timezone:/etc/timezone:ro  #作用同上
