@@ -13,8 +13,11 @@
 
  Date: 05/09/2020 10:49:19
 */
-
+-- 创建数据库eladmin
+CREATE DATABASE IF NOT EXISTS `eladmin` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 SET NAMES utf8mb4;
+-- 选择数据库eladmin
+USE `eladmin`;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
