@@ -86,6 +86,12 @@
             <artifactId>oshi-core</artifactId>
             <version>6.1.4</version>
         </dependency>
+
+        <dependency>
+            <groupId>me.zhengjie</groupId>
+            <artifactId>lizheng-manager</artifactId>
+            <version>2.7</version>
+        </dependency>
     </dependencies>
 
     <!-- 打包 -->
